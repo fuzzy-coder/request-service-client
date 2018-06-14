@@ -1,0 +1,29 @@
+{
+  "name": "request-service-client",
+  "version": "0.0.1",
+  "description": "An extensible service client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fuzzy-coder/request-service-client.git"
+  },
+  "keywords": [
+    "nodejs",
+    "http-client",
+    "service-client"
+  ],
+  "author": "Aditya Joshi <joshi.aditya402@gmail.com> (https://github.com/fuzzy-coder)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fuzzy-coder/request-service-client/issues"
+  },
+  "homepage": "https://github.com/fuzzy-coder/request-service-client#readme",
+  "dependencies": {
+    "lodash": "^4.17.10",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
