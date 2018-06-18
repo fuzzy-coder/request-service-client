@@ -103,8 +103,13 @@ class ModuleBuilder{
                 }
 
                 let driver = new DRIVERS.CacheClientDriver()
-                driver.set = methods.set.bind(driver)
-                driver.get = methods.get.bind(driver)
+                if(methods.set){
+                    driver.set = methods.set.bind(driver)
+                }
+
+                if(methods.get){
+                    driver.get = methods.get.bind(driver)
+                }
 
                 module.driver = driver
                 module.config.isEnabled = true
@@ -142,10 +147,13 @@ class ModuleBuilder{
                 throw new Error('IMPLEMENTATION ERROR :: logger methods object should contain error method eg >> error(request, response)')
             }
 
-            let driver = new DRIVERS.CacheClientDriver()
-            driver.info = methods.info.bind(driver)
-            driver.error = methods.error.bind(driver)
-
+            let driver = new DRIVERS.RequestLoggingDriver()
+            if(methods.info){
+                driver.info = methods.info.bind(driver)
+            }
+            if(methods.error){
+                driver.error = methods.error.bind(driver)
+            }
             module.driver = driver
         }else{
             module.driver = new DRIVERS.RequestLoggingDriver()
