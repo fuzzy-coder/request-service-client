@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 class RequestLoggingDriver{
     constructor(){
         this.driver = console
@@ -5,11 +7,11 @@ class RequestLoggingDriver{
 
     info(request, response){
         if(process.env.NODE_ENV !== 'production')
-            this.driver.info(`SERVICE REQUEST COMPLETE :: ${request.method}, ${request.uri}, ${response.time}`)
+            this.driver.info(`SERVICE REQUEST COMPLETE :: ${_.upperCase(request.method)} ${request.uri} ${response.time}ms`)
     }
 
     error(request, response){
-        this.driver.error(`SERVICE REQUEST ERROR :: ${request.method}, ${request.uri}, ERROR :: ${response.error}`)
+        this.driver.error(`SERVICE REQUEST ERROR :: ${_.upperCase(request.method)} ${request.uri} ${response.error}`)
     }
 }
 

@@ -7,54 +7,65 @@ class ServiceClient{
         _.assign(this, moduleBuilder.build())
     }
 
-    _validateOptions(options = {}){
+    async _callHTTP(method, options = {}){
+        let response = null        
+        let resolveWithFullResponse = true
+        let json = true
+        try{
+            let startTime = new Date().getTime()
+            response = await this.http.driver[method]({..._.omit(options, 'transformer'), resolveWithFullResponse, json})
+            this.logger.driver.info({uri: options.uri, method}, {time: `${new Date().getTime() - startTime}`})
+            return response
+        }catch(error){
+            this.logger.driver.error({uri: options.uri, method, error}, {error})
+            throw error
+        }
+    }
+
+    async call(method, options = {}){        
+        let transformer = options.transformer || null
+
         if(!options.uri){
             throw new Error("IMPLEMENTATION ERROR :: please provide uri")
         }
         if(this.cache.config.isEnabled && !this.cache.config.expiry && !options.cache_expiry){
             throw new Error("IMPLEMENTATION ERROR :: either provide cache.expiry when initializing service client or pass cache_expiry method options")
         }
-    }
 
-    _generateCacheKeyFromOptions(options = {}){
-        return options.uri
-    }
-
-    async call(method, options = {}){
-        this._validateOptions(options)
         if(this.cache.config.isEnabled){
-            let key = this._generateCacheKeyFromOptions(options)
-            let {data, isCached} = this.cache.driver.get(key)
-            if(!isCached){
-                let transformer = options.transformer
-                options.transformer = (response)=> {
-                    this.cache.driver.set(key, response, options.cache_expiry || null)
-                    return transformer(response)
-                }
-                return this.http.driver[method](options)
-            }else{
-                return data
+            let key = options.uri
+            let startTime = new Date().getTime()
+            let {data, isCached} = await this.cache.driver.get(key)
+            if(isCached){
+                this.logger.driver.info({uri: `${options.uri} CACHED`, method}, {time: `${new Date().getTime() - startTime}`})
+                return transformer ? transformer(data) : data
             }
+            let response = await this._callHTTP(method, options)
+            this.cache.driver.set(key, response.body, options.cache_expiry || null)
+            return transformer ? transformer(response.body) : response.body
+        }else{
+            let response = await this._callHTTP(method, options)
+            return transformer ? transformer(response.body) : response.body
         }
     }
 
-    async get(options = {}){
+    get(options = {}){
         return this.call('get', options)
     }
 
-    async post(options = {}){
+    post(options = {}){
         return this.call('post', options)
     }
 
-    async put(options = {}){
+    put(options = {}){
         return this.call('put', options)
     }
 
-    async patch(options = {}){
+    patch(options = {}){
         return this.call('patch', options)
     }
 
-    async delete(options = {}){
+    delete(options = {}){
         return this.call('delete', options)
     }
 }
@@ -67,11 +78,11 @@ class ModuleBuilder{
     build(){
         let modules = { http: null, cache: null, logger: null };
 
-        module.cache = this.buildCacheDriver()
+        modules.cache = this.buildCacheDriver()
 
-        module.http = this.buildHttpDriver()
+        modules.http = this.buildHttpDriver()
 
-        module.logger = this.buildLoggingDriver()
+        modules.logger = this.buildLoggingDriver()
         
         return modules;
     }
