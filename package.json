@@ -1,6 +1,6 @@
 {
   "name": "request-service-client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "An extensible service client",
   "main": "index.js",
   "scripts": {
